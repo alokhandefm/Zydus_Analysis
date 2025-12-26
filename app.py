@@ -129,9 +129,10 @@ def plot_dashboard(df, plot_title):
         legend=dict(
             orientation='h',
             yanchor='bottom', y=1.02,
-            xanchor='right', x=1
+            xanchor='right', x=1,
+            font=dict(color='black')
         ),
-        font=dict(color='black')
+        font=dict(color='black') # Global font color
     )
 
     # Axis Updates
@@ -140,7 +141,9 @@ def plot_dashboard(df, plot_title):
         gridcolor='#f0f0f0',
         linecolor='black',
         ticks='outside',
-        tickcolor='black'
+        tickcolor='black',
+        title_font=dict(color='black'),
+        tickfont=dict(color='black')
     )
     
     fig.update_xaxes(**common_axis)
@@ -179,25 +182,32 @@ if df is not None:
     # Create a nice header block
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
-        st.markdown(f"### 🏭 **Zydus LifeSciences**")
+        st.markdown(f"###  **Zydus LifeSciences**")
     with col2:
-        st.markdown(f"📅 **Date:** {date_str}")
+        st.markdown(f" **Date:** {date_str}")
     with col3:
-        st.markdown(f"📂 **View:** {selected_scenario}")
+        st.markdown(f" **View:** {selected_scenario}")
 
     st.markdown("---")
     
     # 2. Key Metrics Row
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Avg Process Temp", f"{df[COLS['temp_pv']].mean():.1f} °C", delta_color="off")
-    m2.metric("Max Outlet Pressure", f"{df[COLS['p2']].max():.2f} bar")
     
-    # Handle optional columns safely
-    total_steam = f"{df[COLS['steam_flow']].sum() / 60:.0f} kg" if COLS['steam_flow'] in df.columns else "N/A"
-    avg_valve = f"{df[COLS['valve_out']].mean():.1f} %" if COLS['valve_out'] in df.columns else "N/A"
+    # Avg P1
+    val_p1 = df[COLS['p1']].mean() if COLS['p1'] in df.columns else 0
+    m1.metric("Avg Inlet P1", f"{val_p1:.2f} bar")
     
-    m3.metric("Total Steam Consumed", total_steam) 
-    m4.metric("Avg Valve Opening", avg_valve)
+    # Avg P2
+    val_p2 = df[COLS['p2']].mean()
+    m2.metric("Avg Outlet P2", f"{val_p2:.2f} bar")
+    
+    # Avg Flow
+    val_flow = df[COLS['steam_flow']].mean() if COLS['steam_flow'] in df.columns else 0
+    m3.metric("Avg Flow Rate", f"{val_flow:.1f} kg/hr")
+    
+    # Avg Valve
+    val_valve = df[COLS['valve_out']].mean() if COLS['valve_out'] in df.columns else 0
+    m4.metric("Avg Valve %", f"{val_valve:.1f} %")
 
     st.markdown("---")
 
@@ -209,5 +219,5 @@ if df is not None:
     st.plotly_chart(fig, use_container_width=True)
     
 else:
-    st.error(f"⚠️ Data file not found: `{file_path}`")
+    st.error(f" Data file not found: `{file_path}`")
     st.warning("Please ensure the CSV files are in the `data/` folder of your repository.")
